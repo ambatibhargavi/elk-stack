@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:8.17.2"
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "discovery.type=single-node"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:8.17.2"
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL215LXRva2VuOmRMS2ZFMm1jUk15THpNVGpCaGZYdXc
+      - XPACK_SECURITY_ENCRYPTIONKEY=5aa4b669a23b956a1fd177d5664d2f055c275b5f4e51c2fce9f2219f156604b2
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=5aa4b669a23b956a1fd177d5664d2f055c275b5f4e51c2fce9f2219f156604b2
+      - XPACK_REPORTING_ENCRYPTIONKEY=5aa4b669a23b956a1fd177d5664d2f055c275b5f4e51c2fce9f2219f156604b2
+      - XPACK_SECURITY_SECURE_COOKIES=true
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: "docker.elastic.co/beats/filebeat:8.17.2"
+    user: root
+    volumes:
+      - /Users/pavankumar/Documents/elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elasticsearch_data:
